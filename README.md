@@ -2,6 +2,10 @@
 
 This repository is used for the CI/CD module of the Full Stack Open course
 
+## Deployed App URL
+
+[https://pokedex-g5by.onrender.com](https://pokedex-g5by.onrender.com)
+
 ## Commands
 
 Start by running `npm install` inside the project folder
