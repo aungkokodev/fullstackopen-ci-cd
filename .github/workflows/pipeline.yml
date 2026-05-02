@@ -30,4 +30,5 @@ jobs:
       - name: Run playwright test
         run: npm run test:e2e
       - name: Trigger deployment
+        if: ${{ github.event_name == 'push' }}
         run: curl ${{ secrets.RENDER_DEPLOY_HOOK }}
