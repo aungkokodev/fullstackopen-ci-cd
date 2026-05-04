@@ -6,6 +6,10 @@ This repository is used for the CI/CD module of the Full Stack Open course
 
 [https://pokedex-g5by.onrender.com](https://pokedex-g5by.onrender.com)
 
+## Own Pipeline Repo (Exercise 21, 22)
+
+[https://github.com/aungkokodev/fullstackopen-blog](https://github.com/aungkokodev/fullstackopen-blog)
+
 ## Commands
 
 Start by running `npm install` inside the project folder
