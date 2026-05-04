@@ -26,7 +26,7 @@ jobs:
       - name: Run npm build
         run: npm run build
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium
       - name: Run playwright test
         run: npm run test:e2e
       - name: Trigger deployment
@@ -35,12 +35,51 @@ jobs:
 
   tag_release:
     needs: [simple_deployment_pipeline]
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '),'#skip') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - name: Bump version and push tag
-        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '),'#skip') }}
         uses: anothrNick/github-tag-action@1.75.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
+
+  notify:
+    if: always()
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Success
+        if: ${{ needs.simple_deployment_pipeline.result == 'success' && github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '),'#skip') }}
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          nodetail: true
+          content: '✅ **Deployment Successful!** A new version deployed to production'
+          title: '*Deployment Details**'
+          description: |
+            **Commit:** ${{ github.sha }}
+            **Message:** ${{ github.event.head_commit.message }}
+            **Author:** ${{ github.actor }}
+
+      - name: Notify Failure
+        if: ${{ needs.simple_deployment_pipeline.result == 'failure' }}
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          content: '❌ **Build failed!** The pipeline encountered an error'
+          nodetail: true
+          title: '**Failure Details**'
+          color: '#ff0000'
+          description: |
+            **Repository:** ${{ github.repository }}
+            **Branch:** ${{ github.ref_name }}
+            **Commit:** ${{ github.sha }}
+            **Message:** ${{ github.event.head_commit.message || github.event.pull_request.title }}
+            **Author:** ${{ github.actor }}
+            **Workflow:** ${{ github.workflow }}
+            **Job:** ${{ github.job }}
+
+            [View Commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+            [View Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
